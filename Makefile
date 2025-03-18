@@ -1,5 +1,5 @@
 TARGET = clocktimal
-OBJS = clocktimal.o
+OBJS = clocktimal.o utils.o
 CFLAGS = -Wall -I.
 LIBS = 
 
