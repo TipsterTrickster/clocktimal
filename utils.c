@@ -2,7 +2,49 @@
 #include <stdlib.h>
 
 #include "utils.h"
+#include "clocktimal.h"
 
+
+
+void print_solutions(SOLUTION_T *solution_info, int *moves, int *pinsets, int *pinset_mappings) {
+    int i, move;
+
+    char *move_names[30] = {"URf","URb","DRf","DRb","DLf","DLb","ULf","ULb","Uf","Ub","Rf","Rb","Df","Db","Lf","Lb",
+        "urf","urb","drf","drb","dlf","dlb","ulf","ulb","/f","/b","\\f","\\b","ALLf","ALLb"};
+
+    printf("Optimal movecount: %d\n", solution_info->optmoves);
+
+    printf("Optimal Solution: ");
+    for (i = 0; i < PINSET_LENGTH; i++) {
+        move = moves[ pinset_mappings[ (solution_info->move_pinset * PINSET_LENGTH) + i ] ];
+        if (move == 0) continue;
+        move *= -1;
+        if (move < -6) move += 12;
+
+        printf("%s", move_names[ pinsets[ (solution_info->move_pinset * PINSET_LENGTH) + i ] ]);
+        
+        if (move < 0) printf("%d- ", move * -1);
+        else printf("%d ", move);
+    }
+    printf("\n");
+
+    printf("Optimal tickcount: %d\n", solution_info->optticks);
+
+    printf("Optimal Solution: ");
+    for (i = 0; i < PINSET_LENGTH; i++) {
+        move = moves[ pinset_mappings[ (solution_info->tick_pinset * PINSET_LENGTH) + i ] ];
+        if (move == 0) continue;
+        move *= -1;
+        if (move < -6) move += 12;
+
+        printf("%s", move_names[ pinsets[ (solution_info->tick_pinset * PINSET_LENGTH) + i ] ]);
+        
+        if (move < 0) printf("%d- ", move * -1);
+        else printf("%d ", move);
+    }
+    printf("\n");
+
+}
 
 void read_data(int **unique_rows, int *n_unique_rows, int **pinsets, int *n_pinsets, int **pinset_mappings, int *n_pinset_mappings) {
     FILE *file;
