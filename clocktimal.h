@@ -1,6 +1,8 @@
 #ifndef CLOCKTIMAL_H
 #define CLOCKTIMAL_H
 
+#include "utils.h"
+
 #define PINSET_LENGTH 14
 #define BUFFER_SIZE 256
 
@@ -19,10 +21,17 @@ struct solutioninfo {
 
 } typedef SOLUTION_T;
 
+// Forward declaration of DATA_T
+typedef struct pinset_data DATA_T;
+
+// Function prototypes
+
+void calculate_all_moves(int *scramble, DATA_T *program_data);
 
 
-void calculate_all_moves(int *scramble, int **moves, int *unique_rows, int n_unique_rows);
-void find_all_optimal(int *scramble, SOLUTION_T *solution_info, int *moves, int n_unique_rows, int *pinsets, int n_pinsets, int *pinset_mappings);
+void find_all_optimal(int *scramble, DATA_T *program_data);
+
+
 
 
 #endif
