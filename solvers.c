@@ -53,16 +53,24 @@ void find_all_optimal(int *scramble, DATA_T *program_data) {
 
     /* Simul Optimal */
     int min_simul = __INT_MAX__;
+    int min_simul_movecount = __INT_MAX__;
+    int min_simul_tickcount = __INT_MAX__;
     int simul_pinset;
     int simulcount;
-    int simul_state = NOT_SIMUL;
+
+    /* Simtick Optimal */
+    int min_simticks = __INT_MAX__;
+    int min_simtick_simulcount = __INT_MAX__;
+    int min_simtick_movecount = __INT_MAX__;
+    int simtick_pinset;
+    int simtickcount;
 
     int tick_counts[12] = {0,1,2,3,4,5,6,5,4,3,2,1}; // accounts for stuff like the fact that 11 is actually only 1 tick
     for (i = 0; i < program_data->n_pinsets; i++) {
         movecount = 0;
         tickcount = 0;
         simulcount = 0;
-        simul_state = NOT_SIMUL;
+        simtickcount = 0;
 
         pinset = &((program_data->pinsets)[i * PINSET_LENGTH]);
 
@@ -76,57 +84,55 @@ void find_all_optimal(int *scramble, DATA_T *program_data) {
             if (j > 0) {
                 if (pinset[j] % 2 == 1 && (pinset[j - 1] == pinset[j] - 1) && pinset[j] < 28) { // Last move is this moves compliment
                     if (lastmove == 0) simulcount++;
+
+                    if (tick_counts[lastmove] < tick_counts[move]) {
+                        simtickcount += (tick_counts[move] - tick_counts[lastmove]);
+                    }
+                    // tickcount += min(tick_counts[move], tick_counts[lastmove]);
                 } else {
                     if (move != 0) simulcount++;
+                    simtickcount += tick_counts[move];
                 }
             } else {
                 if (move != 0) simulcount++;
+                simtickcount += tick_counts[move];
             }
 
             lastmove = move;
 
-            /* SIMUL MOVE COUNTING, This one is slightly faster for some reason */
-            // if ((j < PINSET_LENGTH - 1) && (pinset[j] < 28) && (simul_state == NOT_SIMUL)) { // Check move is not the last, and is neither ALL moves, these can't be simul
-            //     if ((pinset[j] % 2 == 0) && (pinset[j+1] == pinset[j] + 1)) { // Checks if current move is a front move, and the next is the complement
-
-            //         if (move != 0) { // if move isn't skipped increase simulcount
-            //             simulcount++;
-            //             simul_state = NEXT_SIMUL; // indicate that the nextmove is skipped
-            //         } else  {
-            //             simul_state = POSSIBLE_SKIP; // indicate possible full simul_move skip
-            //         }
-
-            //     } else {
-            //         simulcount++;
-            //     }
-            // } else if (simul_state == POSSIBLE_SKIP) {
-            //     if (move != 0) simulcount++;
-            //     simul_state = NOT_SIMUL;
-            // } else if (simul_state == NEXT_SIMUL) {
-            //     simul_state = NOT_SIMUL;
-            // } else {
-            //     simulcount++;
-            // }
-
-
         }
 
         // Update optimal movecount, and minimize ticks
-        if ((movecount < min_moves) || ((movecount == min_moves) && (tickcount < min_moves_tickcount))) {
+        if ((movecount < min_moves) ||
+            ((movecount == min_moves) && (tickcount < min_moves_tickcount))) {
             min_moves = movecount;
             move_pinset = i;
         }
 
         // Update optimal tickcount, and minimize moves
-        if ((tickcount < min_ticks) || ((tickcount == min_ticks) && (movecount < min_ticks_movecount))) {
+        if ((tickcount < min_ticks) || 
+            ((tickcount == min_ticks) && (movecount < min_ticks_movecount))) {
             min_ticks = tickcount;
             tick_pinset = i;
         }
 
         // Update optimal simulcount
-        if (simulcount < min_simul) {
+        if (simulcount < min_simul || 
+            ((simulcount == min_simul) && (movecount < min_simul_movecount)) || 
+            ((simulcount == min_simul && movecount == min_simul_movecount) && (simtickcount < min_simul_tickcount))) {
             min_simul = simulcount;
+            min_simul_movecount = movecount;
+            min_simul_tickcount = simtickcount;
             simul_pinset = i;
+        }
+
+        if (simtickcount < min_simticks ||
+            ((simtickcount == min_simticks) && (simulcount < min_simtick_simulcount)) || 
+            ((simtickcount == min_simticks && simulcount == min_simtick_simulcount) && (movecount < min_simtick_movecount))) {
+            min_simticks = simtickcount;
+            min_simtick_simulcount = simulcount;
+            min_simtick_movecount = movecount;
+            simtick_pinset = i;
         }
 
     }
@@ -139,5 +145,8 @@ void find_all_optimal(int *scramble, DATA_T *program_data) {
 
     (program_data->solution_info)->optsimul = min_simul;
     (program_data->solution_info)->simul_pinset = simul_pinset;
+
+    (program_data->solution_info)->optsimticks = min_simticks;
+    (program_data->solution_info)->simtick_pinset = simtick_pinset;
 
 }

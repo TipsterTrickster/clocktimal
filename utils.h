@@ -5,6 +5,8 @@
 
 #define PINSET_LENGTH 14
 
+// Simple min
+#define min(a,b) (((a)<(b))?(a):(b))
 
 struct pinset_data {
     int *unique_rows;

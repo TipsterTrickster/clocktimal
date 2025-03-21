@@ -118,6 +118,23 @@ void print_solutions(DATA_T *program_data) {
         else printf("%d ", move);
     }
     printf("\n");
+
+    /* OPTIMAL SIMTICK */
+    printf("Optimal simtick: %d\n", (program_data->solution_info)->optsimticks);
+
+    printf("Optimal Solution: ");
+    for (i = 0; i < PINSET_LENGTH; i++) {
+        move = (program_data->moves)[ (program_data->pinset_mappings)[ ((program_data->solution_info)->simtick_pinset * PINSET_LENGTH) + i ] ];
+        if (move == 0) continue;
+        move *= -1;
+        if (move < -6) move += 12;
+
+        printf("%s", move_names[ (program_data->pinsets)[ ((program_data->solution_info)->simtick_pinset * PINSET_LENGTH) + i ] ]);
+        
+        if (move < 0) printf("%d- ", move * -1);
+        else printf("%d ", move);
+    }
+    printf("\n");
 }
 
 // void read_data(int **unique_rows, int *n_unique_rows, int **pinsets, int *n_pinsets, int **pinset_mappings, int *n_pinset_mappings) {
