@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "utils.h"
-#include "clocktimal.h"
+#include "solvers.h"
 
 
 int is_valid_number(const char *str) {
@@ -62,10 +64,11 @@ void cleanup(DATA_T *program_data) {
 // void print_solutions(SOLUTION_T *solution_info, int *moves, int *pinsets, int *pinset_mappings) {
 void print_solutions(DATA_T *program_data) {
     int i, move;
-
     char *move_names[30] = {"URf","URb","DRf","DRb","DLf","DLb","ULf","ULb","Uf","Ub","Rf","Rb","Df","Db","Lf","Lb",
         "urf","urb","drf","drb","dlf","dlb","ulf","ulb","/f","/b","\\f","\\b","ALLf","ALLb"};
 
+
+    /* OPTIMAL MOVES */
     printf("Optimal movecount: %d\n", (program_data->solution_info)->optmoves);
 
     printf("Optimal Solution: ");
@@ -82,6 +85,7 @@ void print_solutions(DATA_T *program_data) {
     }
     printf("\n");
 
+    /* OPTIMAL TICKCOUNT */
     printf("Optimal tickcount: %d\n", (program_data->solution_info)->optticks);
 
     printf("Optimal Solution: ");
@@ -98,6 +102,22 @@ void print_solutions(DATA_T *program_data) {
     }
     printf("\n");
 
+    /* OPTIMAL SIMUL */
+    printf("Optimal simul: %d\n", (program_data->solution_info)->optsimul);
+
+    printf("Optimal Solution: ");
+    for (i = 0; i < PINSET_LENGTH; i++) {
+        move = (program_data->moves)[ (program_data->pinset_mappings)[ ((program_data->solution_info)->simul_pinset * PINSET_LENGTH) + i ] ];
+        if (move == 0) continue;
+        move *= -1;
+        if (move < -6) move += 12;
+
+        printf("%s", move_names[ (program_data->pinsets)[ ((program_data->solution_info)->simul_pinset * PINSET_LENGTH) + i ] ]);
+        
+        if (move < 0) printf("%d- ", move * -1);
+        else printf("%d ", move);
+    }
+    printf("\n");
 }
 
 // void read_data(int **unique_rows, int *n_unique_rows, int **pinsets, int *n_pinsets, int **pinset_mappings, int *n_pinset_mappings) {
