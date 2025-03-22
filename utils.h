@@ -5,9 +5,6 @@
 
 #define PINSET_LENGTH 14
 
-// Simple min
-#define min(a,b) (((a)<(b))?(a):(b))
-
 struct pinset_data {
     int *unique_rows;
     int n_unique_rows;
@@ -19,6 +16,8 @@ struct pinset_data {
     SOLUTION_T *solution_info;
 
 } typedef DATA_T;
+
+// extern const char *move_names[30];
 
 int is_valid_number(const char *str);
 int get_scramble(int *scramble, int size);

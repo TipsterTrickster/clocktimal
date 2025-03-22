@@ -6,7 +6,7 @@
 #include "utils.h"
 #include "solvers.h"
 
-
+// Checks if string is a valid number
 int is_valid_number(const char *str) {
     if (*str == '-' || *str == '+') str++;  // Allow signed numbers
     if (!*str) return 0;  // Empty string is invalid
@@ -17,7 +17,7 @@ int is_valid_number(const char *str) {
     return 1;
 }
 
-
+// Get state from command line
 int get_scramble(int *scramble, int size) {
     char buffer[BUFFER_SIZE];
     int count = 0;
@@ -51,6 +51,7 @@ int get_scramble(int *scramble, int size) {
 
 }
 
+// Free all memory
 void cleanup(DATA_T *program_data) {
     free(program_data->solution_info);
     free(program_data->moves);
@@ -61,80 +62,132 @@ void cleanup(DATA_T *program_data) {
 }
 
 
-// void print_solutions(SOLUTION_T *solution_info, int *moves, int *pinsets, int *pinset_mappings) {
-void print_solutions(DATA_T *program_data) {
+
+void print_noflip_solution(DATA_T *program_data, int movecount, int pinset, char *name) {
+    int i, move, movetype, next_movetype, next_move;
+    int simul_state = NOT_SIMUL;
+
+    const char *move_names[30] = {"UR","UR","DR","DR","DL","DL","UL","UL","U","U","R","R","D","D","L","L",
+    "ur","ur","dr","dr","dl","dl","ul","ul","/","/","\\","\\","ALL","ALL"};
+
+    printf("Optimal %s: %d\n", name, movecount);
+
+    printf("Optimal Solution: ");
+
+
+    for (i = 0; i < PINSET_LENGTH; i++) {
+        move = (program_data->moves)[ (program_data->pinset_mappings)[ (pinset * PINSET_LENGTH) + i ] ];
+        movetype = (program_data->pinsets)[ (pinset * PINSET_LENGTH) + i ];
+
+        if (i < PINSET_LENGTH - 1) {
+            next_movetype = (program_data->pinsets)[ (pinset * PINSET_LENGTH) + i + 1];
+            next_move = (program_data->moves)[ (program_data->pinset_mappings)[ (pinset * PINSET_LENGTH) + i + 1]];
+        }
+
+        // format moves between -5 and 6
+        move *= -1;
+        if (move <= -6) move += 12;
+        next_move *= -1;
+        if (next_move <= -6) next_move += 12;
+
+        // front move
+        if (movetype % 2 == 0) {
+            if(i < PINSET_LENGTH - 1 && movetype == next_movetype - 1) { // detect simul move
+
+                // print simul move if not skipped
+                if (move != 0 || next_move != 0) {
+                    printf("%s(%d,%d) ", move_names[ (program_data->pinsets)[ (pinset * PINSET_LENGTH) + i ] ], move, next_move);
+                }
+
+                simul_state = NEXT_SIMUL;
+            } else {
+                if (move != 0) {
+                    printf("%s(%d,0) ", move_names[ (program_data->pinsets)[ (pinset * PINSET_LENGTH) + i ] ], move);
+                }
+            }
+        } else if (simul_state == NOT_SIMUL) {
+            if (move != 0) {
+                printf("%s(0,%d) ", move_names[ (program_data->pinsets)[ (pinset * PINSET_LENGTH) + i ] ], move);
+            }
+        } else if (simul_state == NEXT_SIMUL) {
+            simul_state = NOT_SIMUL;
+        } 
+
+
+    }
+    printf("\n");
+
+    
+}
+
+void print_flip_solution(DATA_T *program_data, int movecount, int pinset, char *name) {
     int i, move;
-    char *move_names[30] = {"URf","URb","DRf","DRb","DLf","DLb","ULf","ULb","Uf","Ub","Rf","Rb","Df","Db","Lf","Lb",
-        "urf","urb","drf","drb","dlf","dlb","ulf","ulb","/f","/b","\\f","\\b","ALLf","ALLb"};
+
+    const char *move_names[30] = {"UR","ul","DR","dl","DL","dr","UL","ur","U","D","R","R","D","U","L","L",
+    "ur","UL","dr","DL","dl","DR","ul","UR","/","/","\\","\\","ALL","ALL"};
+
+    printf("Optimal %s: %d\n", name, movecount);
+
+    printf("Optimal Solution: ");
+
+    // loop through front moves
+    for (i = 0; i < PINSET_LENGTH; i++) {
+        // even pins are front, so only do those
+        if ((program_data->pinsets)[ (pinset * PINSET_LENGTH) + i ] % 2 == 0) {
+            move = (program_data->moves)[ (program_data->pinset_mappings)[ (pinset * PINSET_LENGTH) + i ] ]; // get move
+            
+            if (move == 0) continue; // skip moves that are 0
+            
+            // format moves between -5 and 6
+            move *= -1;
+            if (move < -6) move += 12;
+
+            // print movename
+            printf("%s", move_names[ (program_data->pinsets)[ (pinset * PINSET_LENGTH) + i ] ]);
+            
+            // print move number
+            if (move < 0) printf("%d- ", move * -1);
+            else printf("%d ", move);
+        }
+    }
+
+    printf("y2 "); // print Y2 to flip clock
+
+    // loop through back moves
+    for (i = 0; i < PINSET_LENGTH; i++) {
+        // odd pins are front, so only do those
+        if ((program_data->pinsets)[ (pinset * PINSET_LENGTH) + i ] % 2 == 1) {
+            move = (program_data->moves)[ (program_data->pinset_mappings)[ (pinset * PINSET_LENGTH) + i ] ]; // get move
+            
+            if (move == 0) continue; // skip moves that are 0
+            
+            // format moves between -5 and 6
+            if (move > 6) move -= 12;
+
+            // print movename
+            printf("%s", move_names[ (program_data->pinsets)[ (pinset * PINSET_LENGTH) + i ] ]);
+            
+            // print move number
+            if (move < 0) printf("%d- ", move * -1);
+            else printf("%d ", move);
+        }
+    }
+    printf("\n");
+
+
+}
+
+
+void print_solutions(DATA_T *program_data) {    
 
 
     /* OPTIMAL MOVES */
-    printf("Optimal movecount: %d\n", (program_data->solution_info)->optmoves);
+    print_flip_solution(program_data, (program_data->solution_info)->optmoves, (program_data->solution_info)->move_pinset, "movecount");
+    print_flip_solution(program_data, (program_data->solution_info)->optticks, (program_data->solution_info)->tick_pinset, "tickcount");
 
-    printf("Optimal Solution: ");
-    for (i = 0; i < PINSET_LENGTH; i++) {
-        move = (program_data->moves)[ (program_data->pinset_mappings)[ ((program_data->solution_info)->move_pinset * PINSET_LENGTH) + i ] ];
-        if (move == 0) continue;
-        move *= -1;
-        if (move < -6) move += 12;
-
-        printf("%s", move_names[ (program_data->pinsets)[ ((program_data->solution_info)->move_pinset * PINSET_LENGTH) + i ] ]);
-        
-        if (move < 0) printf("%d- ", move * -1);
-        else printf("%d ", move);
-    }
-    printf("\n");
-
-    /* OPTIMAL TICKCOUNT */
-    printf("Optimal tickcount: %d\n", (program_data->solution_info)->optticks);
-
-    printf("Optimal Solution: ");
-    for (i = 0; i < PINSET_LENGTH; i++) {
-        move = (program_data->moves)[ (program_data->pinset_mappings)[ ((program_data->solution_info)->tick_pinset * PINSET_LENGTH) + i ] ];
-        if (move == 0) continue;
-        move *= -1;
-        if (move < -6) move += 12;
-
-        printf("%s", move_names[ (program_data->pinsets)[ ((program_data->solution_info)->tick_pinset * PINSET_LENGTH) + i ] ]);
-        
-        if (move < 0) printf("%d- ", move * -1);
-        else printf("%d ", move);
-    }
-    printf("\n");
-
-    /* OPTIMAL SIMUL */
-    printf("Optimal simul: %d\n", (program_data->solution_info)->optsimul);
-
-    printf("Optimal Solution: ");
-    for (i = 0; i < PINSET_LENGTH; i++) {
-        move = (program_data->moves)[ (program_data->pinset_mappings)[ ((program_data->solution_info)->simul_pinset * PINSET_LENGTH) + i ] ];
-        if (move == 0) continue;
-        move *= -1;
-        if (move < -6) move += 12;
-
-        printf("%s", move_names[ (program_data->pinsets)[ ((program_data->solution_info)->simul_pinset * PINSET_LENGTH) + i ] ]);
-        
-        if (move < 0) printf("%d- ", move * -1);
-        else printf("%d ", move);
-    }
-    printf("\n");
-
-    /* OPTIMAL SIMTICK */
-    printf("Optimal simtick: %d\n", (program_data->solution_info)->optsimticks);
-
-    printf("Optimal Solution: ");
-    for (i = 0; i < PINSET_LENGTH; i++) {
-        move = (program_data->moves)[ (program_data->pinset_mappings)[ ((program_data->solution_info)->simtick_pinset * PINSET_LENGTH) + i ] ];
-        if (move == 0) continue;
-        move *= -1;
-        if (move < -6) move += 12;
-
-        printf("%s", move_names[ (program_data->pinsets)[ ((program_data->solution_info)->simtick_pinset * PINSET_LENGTH) + i ] ]);
-        
-        if (move < 0) printf("%d- ", move * -1);
-        else printf("%d ", move);
-    }
-    printf("\n");
+    print_noflip_solution(program_data, (program_data->solution_info)->optsimul, (program_data->solution_info)->simul_pinset, "simul count");
+    print_noflip_solution(program_data, (program_data->solution_info)->optsimticks, (program_data->solution_info)->simtick_pinset, "simtick count");
+   
 }
 
 // void read_data(int **unique_rows, int *n_unique_rows, int **pinsets, int *n_pinsets, int **pinset_mappings, int *n_pinset_mappings) {

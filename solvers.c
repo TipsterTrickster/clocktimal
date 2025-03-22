@@ -76,7 +76,6 @@ void find_all_optimal(int *scramble, DATA_T *program_data) {
 
         for (j = 0; j < PINSET_LENGTH; j++) {
             move = (program_data->moves)[ (program_data->pinset_mappings)[(i * PINSET_LENGTH) + j] ];
-            // move = (program_data->moves)[ pinset[j] ];
 
             if (move != 0) movecount++; // COUNT MOVES
             tickcount += tick_counts[move]; // COUNT TICKS
@@ -88,7 +87,6 @@ void find_all_optimal(int *scramble, DATA_T *program_data) {
                     if (tick_counts[lastmove] < tick_counts[move]) {
                         simtickcount += (tick_counts[move] - tick_counts[lastmove]);
                     }
-                    // tickcount += min(tick_counts[move], tick_counts[lastmove]);
                 } else {
                     if (move != 0) simulcount++;
                     simtickcount += tick_counts[move];
