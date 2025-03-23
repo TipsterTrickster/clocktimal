@@ -1,9 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "utils.h"
 #include "solvers.h"
 
+
+
+void *calculate_all_moves_p(void *args) {
+
+    // multithread variables
+    struct thread_args *t;
+    t = (struct thread_args *)args;
+    DATA_T *program_data = t->program_data;
+    int *scramble = t->scramble;
+
+    // counter variables
+    int i, j, c;
+
+
+    // printf("Thread %d, START: %d END: %d\n", t->thread_num, t->move_start, t->move_end);
+
+    // calculate all unique moves
+    for (i = t->move_start; i < t->move_end; i += 1) {
+        c = 0;
+        for (j = 0; j < PINSET_LENGTH; j++) {
+            c += (program_data->unique_rows)[(i * PINSET_LENGTH) + j] * scramble[j];
+        }
+
+        c %= 12;
+        (program_data->moves)[i] = c < 0 ? c + 12 : c;
+    }
+
+    pthread_exit(NULL);
+}
 
 // void calculate_all_moves(int *scramble, int **moves, int *unique_rows, int n_unique_rows) {
 void calculate_all_moves(int *scramble, DATA_T *program_data) {
@@ -28,15 +58,12 @@ void calculate_all_moves(int *scramble, DATA_T *program_data) {
     }
 }
 
-// void find_all_optimal(int *scramble, SOLUTION_T *solution_info, int *moves, int n_unique_rows, int *pinsets, int n_pinsets, int *pinset_mappings) {
+
 void find_all_optimal(int *scramble, DATA_T *program_data) {
-
-
     // Variables for optimal solving
     int i, j;
     int move, lastmove;
     int *pinset;
-
 
     /* Optimal Movecount */
     int min_moves = __INT_MAX__; // lowest movecount
@@ -66,6 +93,7 @@ void find_all_optimal(int *scramble, DATA_T *program_data) {
     int simtickcount;
 
     int tick_counts[12] = {0,1,2,3,4,5,6,5,4,3,2,1}; // accounts for stuff like the fact that 11 is actually only 1 tick
+
     for (i = 0; i < program_data->n_pinsets; i++) {
         movecount = 0;
         tickcount = 0;

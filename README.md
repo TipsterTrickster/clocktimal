@@ -11,7 +11,7 @@ pinsets_compact.py creates pinset_mappings.bin where every 14 integers correspon
 
 
 TODO:
-better solution printing
+PARALLELLLLELL
 command line args
 batch solving from file
 statistics, a lot of random scrambles, and one scramble

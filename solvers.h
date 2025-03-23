@@ -10,6 +10,18 @@
 #define NEXT_SIMUL 1
 #define POSSIBLE_SKIP 2
 
+// Forward declaration of DATA_T
+typedef struct pinset_data DATA_T;
+
+struct thread_args {
+    int thread_num;
+    DATA_T *program_data;
+    int *scramble;
+    int move_start;
+    int move_end;
+    int pinset_start;
+    int pinset_end;
+};
 
 struct solutioninfo {
     int optmoves;
@@ -26,13 +38,11 @@ struct solutioninfo {
 
 } typedef SOLUTION_T;
 
-// Forward declaration of DATA_T
-typedef struct pinset_data DATA_T;
+
 
 // Function prototypes
-
 void calculate_all_moves(int *scramble, DATA_T *program_data);
-
+void *calculate_all_moves_p(void *args);
 
 void find_all_optimal(int *scramble, DATA_T *program_data);
 

@@ -1,12 +1,12 @@
 TARGET = clocktimal
 OBJS = clocktimal.o solvers.o utils.o
-CFLAGS = -Wall -I.
-LIBS = 
+CFLAGS = -Wall -I. -pthread
+LIBS =
 
 all : ${TARGET}
 
 ${TARGET} : ${OBJS}
-	${CC} -o ${TARGET} ${OBJS} ${LIBS}
+	${CC} ${LIBS} -o ${TARGET} ${OBJS} 
 
 clean:
 	rm -f ${TARGET} ${OBJS}
