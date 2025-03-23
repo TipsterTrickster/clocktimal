@@ -14,6 +14,7 @@
 typedef struct pinset_data DATA_T;
 
 struct thread_args {
+    // input args
     int thread_num;
     DATA_T *program_data;
     int *scramble;
@@ -21,6 +22,16 @@ struct thread_args {
     int move_end;
     int pinset_start;
     int pinset_end;
+
+    // return values
+    int optmoves;
+    int move_pinset;
+    int optticks;
+    int tick_pinset;
+    int optsimul;
+    int simul_pinset;
+    int optsimticks;
+    int simtick_pinset;
 };
 
 struct solutioninfo {
@@ -45,7 +56,7 @@ void calculate_all_moves(int *scramble, DATA_T *program_data);
 void *calculate_all_moves_p(void *args);
 
 void find_all_optimal(int *scramble, DATA_T *program_data);
-
+void *find_all_optimal_p(void *args);
 
 
 

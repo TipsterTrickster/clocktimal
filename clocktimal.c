@@ -10,7 +10,7 @@
 int main() {
 
     // Multithreading
-    int num_threads = 1;
+    int num_threads = 8;
 	pthread_t *threads;
 	struct thread_args *thread_data;
     int t, result;
@@ -42,19 +42,23 @@ int main() {
 	if (thread_data==NULL) perror("allocating thread_data");
 
 
-    int size = program_data->n_unique_rows / num_threads;
+    int move_size = program_data->n_unique_rows / num_threads;
+    int pinset_size = program_data->n_pinsets / num_threads;
 
     // General Thread data initialization
     for (t = 0; t < num_threads; t++) {
         thread_data[t].thread_num = t;
         thread_data[t].program_data = program_data;
 
-        thread_data[t].move_start = t * size;
+        thread_data[t].move_start = t * move_size;
+        thread_data[t].pinset_start = t * pinset_size;
         
         if (t < num_threads - 1) {
-            thread_data[t].move_end = (t + 1) * size;
+            thread_data[t].move_end = (t + 1) * move_size;
+            thread_data[t].pinset_end = (t + 1) * pinset_size;
         } else {
             thread_data[t].move_end = program_data->n_unique_rows;
+            thread_data[t].pinset_end = program_data->n_pinsets;
         }
     }
 
@@ -75,7 +79,46 @@ int main() {
 		pthread_join(threads[t],NULL);
 	}
 
-    find_all_optimal(scramble, program_data);
+    for (t = 0; t < num_threads; t++) {
+        thread_data[t].scramble = scramble;
+
+        result = pthread_create(&threads[t], NULL, find_all_optimal_p, (void *)&thread_data[t]);
+
+        if (result) {
+            perror("error creating thread\n");
+            exit(1);
+        }
+    }
+
+    (program_data->solution_info)->optmoves = __INT_MAX__;
+    (program_data->solution_info)->optticks = __INT_MAX__;
+    (program_data->solution_info)->optsimul = __INT_MAX__;
+    (program_data->solution_info)->optsimticks = __INT_MAX__;
+
+    for(t=0;t<num_threads;t++) {
+		pthread_join(threads[t],NULL);
+
+        if (thread_data[t].optmoves < (program_data->solution_info)->optmoves) {
+            (program_data->solution_info)->optmoves = thread_data[t].optmoves;
+            (program_data->solution_info)->move_pinset = thread_data[t].move_pinset;
+        }
+        if (thread_data[t].optticks < (program_data->solution_info)->optticks) {
+            (program_data->solution_info)->optticks = thread_data[t].optticks;
+            (program_data->solution_info)->tick_pinset = thread_data[t].tick_pinset;
+        }
+        if (thread_data[t].optsimul < (program_data->solution_info)->optsimul) {
+            (program_data->solution_info)->optsimul = thread_data[t].optsimul;
+            (program_data->solution_info)->simul_pinset = thread_data[t].simul_pinset;
+        }
+        if (thread_data[t].optsimticks < (program_data->solution_info)->optsimticks) {
+            (program_data->solution_info)->optsimticks = thread_data[t].optsimticks;
+            (program_data->solution_info)->simtick_pinset = thread_data[t].simtick_pinset;
+        }
+
+	}
+
+
+    // find_all_optimal(scramble, program_data);
     print_solutions(program_data);
 
     // while(1) {
