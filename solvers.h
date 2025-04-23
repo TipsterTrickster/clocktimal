@@ -25,26 +25,44 @@ struct thread_args {
 
     // return values
     int optmoves;
+    int optmove_tickcount;
     int move_pinset;
+
     int optticks;
+    int opttick_movecount;
     int tick_pinset;
+
+
     int optsimul;
+    int optsimul_movecount;
+    int optsimul_tickcount;
     int simul_pinset;
+
+
     int optsimticks;
+    int optsimtick_simulcount;
+    int optsimtick_movecount;
     int simtick_pinset;
 };
 
 struct solutioninfo {
     int optmoves;
+    int optmove_tickcount;
     int move_pinset;
 
     int optticks;
+    int opttick_movecount;
     int tick_pinset;
 
     int optsimul;
+    int optsimul_movecount;
+    int optsimul_tickcount;
     int simul_pinset;
 
+
     int optsimticks;
+    int optsimtick_simulcount;
+    int optsimtick_movecount;
     int simtick_pinset;
 
 } typedef SOLUTION_T;
@@ -57,6 +75,9 @@ void *calculate_all_moves_p(void *args);
 
 void find_all_optimal(int *scramble, DATA_T *program_data);
 void *find_all_optimal_p(void *args);
+
+void *find_move_optimal_p(void *args);
+void *find_tick_optimal_p(void *args);
 
 
 

@@ -11,10 +11,9 @@ pinsets_compact.py creates pinset_mappings.bin where every 14 integers correspon
 
 
 TODO:
-PARALLELLLLELL
 command line args
 batch solving from file
-statistics, a lot of random scrambles, and one scramble
+statistics for one scramble
 Optimize pinset generation
 Optimize pinset storage
 Research 12 move pinset coverage (all unique 12 movers? remove dupes?)

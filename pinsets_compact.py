@@ -4,15 +4,6 @@ NUM_ELEMENTS = 14
 pinset_format = "14i"  # Format for reading 14 integers
 row_format = "14i"  # Format for reading 14 integers
 
-# Reading pinsets from binary file
-# with open("pinsets.bin", "rb") as f:
-#     all_pinsets = []
-#     while True:
-#         data = f.read(struct.calcsize(pinset_format))  # Read the size of one pinset
-#         if not data:
-#             break  # End of file
-#         pinset = struct.unpack(pinset_format, data)  # Unpack binary data into a tuple
-#         all_pinsets.append(pinset)
 
 unique_rows = []
 row_to_index = {}

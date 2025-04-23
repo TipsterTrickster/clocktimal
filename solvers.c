@@ -132,6 +132,7 @@ void find_all_optimal(int *scramble, DATA_T *program_data) {
         if ((movecount < min_moves) ||
             ((movecount == min_moves) && (tickcount < min_moves_tickcount))) {
             min_moves = movecount;
+            min_moves_tickcount = tickcount;
             move_pinset = i;
         }
 
@@ -139,6 +140,7 @@ void find_all_optimal(int *scramble, DATA_T *program_data) {
         if ((tickcount < min_ticks) || 
             ((tickcount == min_ticks) && (movecount < min_ticks_movecount))) {
             min_ticks = tickcount;
+            min_ticks_movecount = movecount;
             tick_pinset = i;
         }
 
@@ -257,6 +259,7 @@ void *find_all_optimal_p(void *args) {
         if ((movecount < min_moves) ||
             ((movecount == min_moves) && (tickcount < min_moves_tickcount))) {
             min_moves = movecount;
+            min_moves_tickcount = tickcount;
             move_pinset = i;
         }
 
@@ -264,6 +267,7 @@ void *find_all_optimal_p(void *args) {
         if ((tickcount < min_ticks) || 
             ((tickcount == min_ticks) && (movecount < min_ticks_movecount))) {
             min_ticks = tickcount;
+            min_ticks_movecount = movecount;
             tick_pinset = i;
         }
 
@@ -289,16 +293,124 @@ void *find_all_optimal_p(void *args) {
     }
 
     t->optmoves = min_moves;
+    t->optmove_tickcount = min_moves_tickcount;
     t->move_pinset = move_pinset;
 
     t->optticks = min_ticks;
+    t->opttick_movecount = min_ticks_movecount;
     t->tick_pinset = tick_pinset;
 
     t->optsimul = min_simul;
+    t->optsimul_movecount = min_simul_movecount;
+    t->optsimul_tickcount = min_simul_tickcount;
     t->simul_pinset = simul_pinset;
 
     t->optsimticks = min_simticks;
+    t->optsimtick_simulcount = min_simtick_simulcount;
+    t->optsimtick_movecount = min_simtick_movecount;
     t->simtick_pinset = simtick_pinset;
+
+    pthread_exit(NULL);
+}
+
+void *find_move_optimal_p(void *args) {
+    // multithread variables
+    struct thread_args *t;
+    t = (struct thread_args *)args;
+    DATA_T *program_data = t->program_data;
+
+    // Variables for optimal solving
+    int i, j;
+    int move;
+    int *pinset;
+
+    /* Optimal Movecount */
+    int min_moves = __INT_MAX__; // lowest movecount
+    int min_moves_tickcount = __INT_MAX__; // lowest ticks for lowest movecount
+    int move_pinset;
+    int movecount;
+
+    for (i = t->pinset_start; i < t->pinset_end; i++) {
+        movecount = 0;
+
+        pinset = &((program_data->pinsets)[i * PINSET_LENGTH]);
+
+        for (j = 0; j < PINSET_LENGTH; j++) {
+            move = (program_data->moves)[ (program_data->pinset_mappings)[(i * PINSET_LENGTH) + j] ];
+
+            if (move != 0) movecount++; // COUNT MOVES
+
+            if (movecount >= min_moves) {
+                movecount += 2;
+                break;
+            }
+
+        }
+
+        // Update optimal movecount, and minimize ticks
+        if (movecount < min_moves) {
+            min_moves = movecount;
+            move_pinset = i;
+        }
+
+    }
+
+    t->optmoves = min_moves;
+    t->move_pinset = move_pinset;
+
+
+    pthread_exit(NULL);
+}
+
+
+void *find_tick_optimal_p(void *args) {
+    // multithread variables
+    struct thread_args *t;
+    t = (struct thread_args *)args;
+    DATA_T *program_data = t->program_data;
+
+    // Variables for optimal solving
+    int i, j;
+    int move;
+    int *pinset;
+
+
+    /* Optimal Tickcount */
+    int min_ticks = __INT_MAX__; // Lowest tick count
+    int min_ticks_movecount = __INT_MAX__; // Lowest movecount for the lowest tick count 
+    int tick_pinset;
+    int tickcount;
+
+
+    int tick_counts[12] = {0,1,2,3,4,5,6,5,4,3,2,1}; // accounts for stuff like the fact that 11 is actually only 1 tick
+
+    for (i = t->pinset_start; i < t->pinset_end; i++) {
+        tickcount = 0;
+
+        pinset = &((program_data->pinsets)[i * PINSET_LENGTH]);
+
+        for (j = 0; j < PINSET_LENGTH; j++) {
+            move = (program_data->moves)[ (program_data->pinset_mappings)[(i * PINSET_LENGTH) + j] ];
+
+            tickcount += tick_counts[move]; // COUNT TICKS
+
+            if (tickcount >= min_ticks) {
+                tickcount += 2;
+                break;
+            }
+
+        }
+
+        // Update optimal tickcount, and minimize moves
+        if (tickcount < min_ticks) {
+            min_ticks = tickcount;
+            tick_pinset = i;
+        }
+
+    }
+
+    t->optticks = min_ticks;
+    t->tick_pinset = tick_pinset;
 
     pthread_exit(NULL);
 }

@@ -17,19 +17,26 @@ int is_valid_number(const char *str) {
     return 1;
 }
 
+
 // Get state from command line
 int get_scramble(int *scramble, int size) {
     char buffer[BUFFER_SIZE];
     int count = 0;
 
-    printf("Enter scramble: ");
+    printf("Enter scramble (or 'q' to quit): ");
     
     if (!fgets(buffer, BUFFER_SIZE, stdin)) {
-        printf("Error reading input try again\n");
+        printf("Error reading input, try again\n");
         return 1;
     }
 
     char *token = strtok(buffer, " \t\n");
+
+    // Check if the first token is "q" and exit
+    if (token && strcmp(token, "q") == 0) {
+        printf("Exiting program...\n");
+        exit(0);
+    }
 
     while (token && count < size) {
         if (is_valid_number(token)) {
@@ -43,13 +50,13 @@ int get_scramble(int *scramble, int size) {
     }
 
     if (count < size) {
-        printf("Please input 14 numbers\n");
+        printf("Please input %d numbers\n", size);
         return 1;
     }
 
     return 0;
-
 }
+
 
 // Free all memory
 void cleanup(DATA_T *program_data) {
@@ -147,7 +154,7 @@ void print_flip_solution(DATA_T *program_data, int movecount, int pinset, char *
             
             // print move number
             if (move < 0) printf("%d- ", move * -1);
-            else printf("%d ", move);
+            else printf("%d+ ", move);
         }
     }
 
@@ -177,6 +184,9 @@ void print_flip_solution(DATA_T *program_data, int movecount, int pinset, char *
 
 }
 
+// void print_movecount_solution(DATA_T *program_data) {
+//     print_flip_solution(program_data, (program_data->solution_info)->optmoves, (program_data->solution_info)->move_pinset, "movecount");
+// }
 
 void print_solutions(DATA_T *program_data) {    
 
