@@ -33,8 +33,6 @@ int main(int argc, char *argv[]) {
     read_data(program_data);
 
 
-    // program_data->unique_rows
-
     // allocate new array for all moves
     program_data->moves = (int *)malloc(program_data->n_unique_rows * sizeof(int));
     if (program_data->moves == NULL) {

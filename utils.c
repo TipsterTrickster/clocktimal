@@ -176,7 +176,7 @@ void print_flip_solution(DATA_T *program_data, int movecount, int pinset, char *
             
             // print move number
             if (move < 0) printf("%d- ", move * -1);
-            else printf("%d ", move);
+            else printf("%d+ ", move);
         }
     }
     printf("\n");
